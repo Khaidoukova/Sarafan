@@ -1,27 +1,33 @@
 from django.db import models
 from django.utils.text import slugify
-
+from unidecode import unidecode
 from users.models import User
 
 
 class Category(models.Model):
     """ Модель категории """
     title = models.CharField(max_length=50, verbose_name='Категория')
-    slug = models.SlugField(verbose_name='Слаг', unique=True)
+    slug = models.SlugField(verbose_name='Слаг', unique=True, blank=True)
     image = models.ImageField(upload_to='category/', verbose_name='Изображение', blank=True, null=True)
 
     def __str__(self):
         return f'{self.title}'
 
+    def save(self, *args, **kwargs):
+
+        if not self.slug:
+            count = 1
+            # Генерируем slug на основе title, если его нет
+            self.slug = slugify(unidecode(self.title))
+            # Убедимся, что slug уникален
+            if Category.objects.filter(slug=self.slug).exists():
+                self.slug = f'{self.slug}-{count}'
+                count += 1
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-
-    def save(self, *args, **kwargs):
-        ''' Сохранение поля slug по названию категории '''
-
-        self.slug = slugify(self.title)
-        super(Category, self).save(*args, **kwargs)
 
 
 class Subcategory(models.Model):
@@ -44,6 +50,9 @@ class Product(models.Model):
     title = models.CharField(max_length=150, verbose_name='Название')
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, verbose_name='Подкатегория')
     price = models.PositiveIntegerField(verbose_name="Цена")
+    image_small = models.ImageField(upload_to='products/small/', verbose_name='превью', blank=True, null=True)
+    image_medium = models.ImageField(upload_to='products/medium/', verbose_name='изображение средний размер', blank=True, null=True)
+    image_large = models.ImageField(upload_to='products/large/', verbose_name='изображение большой размер', blank=True, null=True)
 
     def __str__(self):
         return f'{self.title}'
@@ -51,22 +60,6 @@ class Product(models.Model):
     class Meta:
         verbose_name = 'Товар'
         verbose_name_plural = 'Товары'
-
-
-class ProductImage(models.Model):
-    """ Модель изображения товара """
-    SIZES = [
-        ('small', 'Small'),
-        ('medium', 'Medium'),
-        ('large', 'Large')
-    ]
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/')
-    size = models.CharField(max_length=10, choices=SIZES)
-
-    class Meta:
-        verbose_name = 'Фото товара'
-        verbose_name_plural = 'Фото товара'
 
 
 class Cart(models.Model):
