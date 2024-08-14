@@ -21,7 +21,7 @@
 
 - Python 3.7 или выше
 - pip
-- virtualenv (опционально)
+- virtualenv
 
 ## Установка
 
@@ -29,7 +29,7 @@
 
 git clone https://github.com/Khaidoukova/Sarafan.git
 
-2. Создайте и активируйте виртуальное окружение (опционально):
+2. Создайте и активируйте виртуальное окружение:
 
 python -m venv venv
 Linux/Mac OS: source venv/bin/activate, Windows: venv\Scripts\activate
@@ -40,16 +40,18 @@ pip install -r requirements.txt
 
 ## Настройка
 1. Создайте базу данных:
-2. 
+
 psql -U postgres
+
 postgres=# create database sarafan;
 
-1. Выполните миграции:
+2. Выполните миграции:
 
 python manage.py makemigrations
+
 python manage.py migrate
 
-2. Создайте суперпользователя:
+3. Создайте суперпользователя:
 
 python manage.py createsuperuser
 
